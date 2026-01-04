@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇宙 - 主播发现 Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #000;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 44px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #000;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .status-bar .time {
+            font-weight: 600;
+        }
+
+        .status-bar .indicators {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        /* Page Management */
+        .page {
+            display: none;
+            min-height: calc(100vh - 44px);
+            background: #fff;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ==================== PAGE 1: DISCOVER HOME ==================== */
+        .discover-header {
+            padding: 20px;
+            background: #fff;
+        }
+
+        .discover-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .planet-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 32px;
+        }
+
+        .search-box {
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-box:hover {
+            background: #eef1f5;
+        }
+
+        .search-icon {
+            color: #999;
+            font-size: 18px;
+        }
+
+        .search-placeholder {
+            color: #999;
+            font-size: 15px;
+            flex: 1;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .filter-tab {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f0f2f5;
+            color: #666;
+        }
+
+        .filter-tab.active {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 24px 20px 16px;
+            color: #4a9eff;
+        }
+
+        /* ==================== PAGE 2: SEARCH RESULTS ==================== */
+        .search-page-header {
+            padding: 12px 16px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            font-size: 15px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .search-input-container {
+            flex: 1;
+            background: #f5f7fa;
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .clear-btn {
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .search-tabs {
+            display: flex;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+        }
+
+        .search-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 15px;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .search-tab.active {
+            color: #4a9eff;
+            font-weight: 600;
+        }
+
+        .search-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 3px;
+            background: #4a9eff;
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* Host Card - Large Version */
+        .host-card-large {
+            margin: 24px 16px;
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border-radius: 20px;
+            padding: 24px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .host-card-large:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .host-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .host-card-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 3px solid rgba(74, 158, 255, 0.3);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .host-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .host-card-info {
+            flex: 1;
+        }
+
+        .host-card-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .host-card-verified {
+            width: 20px;
+            height: 20px;
+            background: #4a9eff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .host-card-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .host-card-stats {
+            display: flex;
+            gap: 32px;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .host-card-stat {
+            text-align: left;
+        }
+
+        .host-card-stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .host-card-stat-label {
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        .host-card-bio {
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            opacity: 0.85;
+        }
+
+        /* ==================== PAGE 3: HOST PROFILE ==================== */
+        .host-profile-page {
+            background: #fff;
+        }
+
+        .profile-header {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 8px solid #f5f7fa;
+        }
+
+        .profile-nav {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-back-btn {
+            color: #000;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .profile-content {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .profile-left {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #000;
+        }
+
+        .profile-shows {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .profile-shows-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e3f2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .profile-shows-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .profile-bio {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .profile-avatar {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 20px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .profile-btn {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: 22px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .profile-btn.primary {
+            background: #e3f2ff;
+            color: #4a9eff;
+        }
+
+        .profile-btn.secondary {
+            background: #f0f2f5;
+            color: #666;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            padding: 20px;
+            background: #fff;
+            border-bottom: 8px solid #f5f7fa;
+        }
+
+        .profile-stat {
+            text-align: center;
+        }
+
+        .profile-stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .profile-stat-label {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .profile-section {
+            background: #fff;
+        }
+
+        .profile-section-title {
+            padding: 20px 20px 16px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e3f2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Episode Timeline */
+        .episode-timeline {
+            padding: 0 16px 24px;
+            position: relative;
+        }
+
+        .episode-timeline::before {
+            content: '';
+            position: absolute;
+            left: 52px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #667eea, #e0e0e0);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .timeline-date {
+            width: 60px;
+            flex-shrink: 0;
+            padding-top: 8px;
+        }
+
+        .timeline-month {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .timeline-day {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            line-height: 1;
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            left: 46px;
+            top: 12px;
+            box-shadow: 0 0 0 3px #f5f7fa;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .timeline-content:hover {
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+            transform: translateX(4px);
+        }
+
+        .timeline-podcast {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .timeline-podcast-cover {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .timeline-podcast-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .timeline-podcast-name {
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .timeline-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .timeline-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .timeline-tag {
+            padding: 3px 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .timeline-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .timeline-stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span class="time">14:44</span>
+            <div class="indicators">
+                <span>🔇</span>
+                <span>📶</span>
+                <span>📱</span>
+                <span>82%</span>
+            </div>
+        </div>
+
+        <!-- ==================== PAGE 1: DISCOVER HOME ==================== -->
+        <div class="page active" id="discoverPage">
+            <div class="discover-header">
+                <div class="discover-title">
+                    发现
+                    <span class="planet-icon">🪐</span>
+                </div>
+                
+                <div class="search-box" onclick="showSearchPage()">
+                    <span class="search-icon">🔍</span>
+                    <span class="search-placeholder">2025小宇宙播客大赏</span>
+                    <span class="search-icon">📷</span>
+                </div>
+
+                <div class="filter-tabs">
+                    <div class="filter-tab">🗂️ 分类</div>
+                    <div class="filter-tab active">2025小宇宙播客大赏</div>
+                    <div class="filter-tab">🎙️ 播客寻宝</div>
+                </div>
+            </div>
+
+            <div class="section-title">为你推荐</div>
+            
+            <div style="padding: 0 16px 24px;">
+                <!-- Podcast recommendation cards -->
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;margin-bottom:16px;">
+                    <div style="display:flex;gap:12px;margin-bottom:12px;">
+                        <div style="width:80px;height:80px;border-radius:8px;background:linear-gradient(135deg,#4ecdc4,#44a08d);flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div style="font-size:13px;color:#999;margin-bottom:4px;">摸鱼早报</div>
+                            <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:8px;line-height:1.4;">085-人形机器人批量上岗宁德时代生产线/周大福宣布涨价/海...</div>
+                            <div style="font-size:12px;color:#999;">💬 商业类的精彩单集</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;margin-bottom:16px;">
+                    <div style="display:flex;gap:12px;margin-bottom:12px;">
+                        <div style="width:80px;height:80px;border-radius:8px;background:linear-gradient(135deg,#f093fb,#f5576c);flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div style="font-size:13px;color:#999;margin-bottom:4px;">我是你的眼, 带你领略股市的变化</div>
+                            <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:8px;line-height:1.4;">眼哥股市会 12月19日</div>
+                            <div style="font-size:12px;color:#999;">💬 评论数 99+</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;">
+                    <div style="display:flex;gap:12px;margin-bottom:12px;">
+                        <div style="width:80px;height:80px;border-radius:8px;background:linear-gradient(135deg,#667eea,#764ba2);flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div style="font-size:13px;color:#999;margin-bottom:4px;">自习室 STUDY ROOM</div>
+                            <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:8px;line-height:1.4;">85 金钱心理学 | 那些你没花掉的钱,正在扩大你的人生半径</div>
+                            <div style="font-size:12px;color:#999;">💬 进入 25 年 12 月最热榜</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align:center;padding:20px;color:#999;font-size:14px;">🔄 换一换</div>
+            </div>
+
+            <div class="section-title">继续精选</div>
+        </div>
+
+        <!-- ==================== PAGE 2: SEARCH RESULTS ==================== -->
+        <div class="page" id="searchPage">
+            <div class="search-page-header">
+                <span class="back-btn" onclick="goBackToDiscover()">返回</span>
+                <div class="search-input-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchInput" value="嘻哈" readonly>
+                    <span class="clear-btn" onclick="clearSearch()">×</span>
+                </div>
+            </div>
+
+            <div class="search-tabs">
+                <div class="search-tab active">全部</div>
+                <div class="search-tab">节目</div>
+                <div class="search-tab">单集</div>
+                <div class="search-tab">用户</div>
+            </div>
+
+            <!-- Large Host Card -->
+            <div class="host-card-large" onclick="showHostProfile()">
+                <div class="host-card-header">
+                    <div class="host-card-avatar">
+                        <img src="xiha-avatar.jpg" alt="嘻哈">
+                    </div>
+                    <div class="host-card-info">
+                        <div class="host-card-name">
+                            嘻哈
+                            <span class="host-card-verified">✓</span>
+                        </div>
+                        <div class="host-card-label">脱口秀演员 · 主播</div>
+                    </div>
+                </div>
+                <div class="host-card-stats">
+                    <div class="host-card-stat">
+                        <div class="host-card-stat-number">3</div>
+                        <div class="host-card-stat-label">参与节目</div>
+                    </div>
+                    <div class="host-card-stat">
+                        <div class="host-card-stat-number">1.5万</div>
+                        <div class="host-card-stat-label">关注者</div>
+                    </div>
+                    <div class="host-card-stat">
+                        <div class="host-card-stat-number">45</div>
+                        <div class="host-card-stat-label">参与单集</div>
+                    </div>
+                </div>
+                <div class="host-card-bio">
+                    女性脱口秀演员,用笑声改写叙事。参与《喜剧之王单口季》《脱口秀大会》等节目,擅长以真诚和力量打动观众。
+                </div>
+            </div>
+
+            <!-- Section divider -->
+            <div style="padding:20px;background:#fff;">
+                <div style="font-size:17px;font-weight:700;color:#000;margin-bottom:16px;">节目</div>
+                
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;margin-bottom:12px;">
+                    <div style="display:flex;gap:12px;">
+                        <div style="width:64px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                            <img src="https://image.xyzcdn.net/FpMac26U7CcdXhJmgZxIGxcDY-Y-.png" style="width:100%;height:100%;object-fit:cover;">
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:4px;">天真不天真</div>
+                            <div style="font-size:12px;color:#999;margin-bottom:6px;">杨天真 · 共42期</div>
+                            <div style="font-size:12px;color:#999;">关于女性成长、职场、创业的真诚分享</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;">
+                    <div style="display:flex;gap:12px;">
+                        <div style="width:64px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                            <img src="https://image.xyzcdn.net/FmKfIpttk36JzhU_EdromTtZQisJ.png" style="width:100%;height:100%;object-fit:cover;">
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:4px;">展开讲讲</div>
+                            <div style="font-size:12px;color:#999;margin-bottom:6px;">三位女性主播 · 共85期</div>
+                            <div style="font-size:12px;color:#999;">三个女生的深度对谈</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding:20px;background:#fff;border-top:8px solid #f5f7fa;">
+                <div style="font-size:17px;font-weight:700;color:#000;margin-bottom:16px;">单集</div>
+                
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;margin-bottom:12px;">
+                    <div style="font-size:12px;color:#999;margin-bottom:6px;">天真不天真 · 2025.9.16</div>
+                    <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:8px;line-height:1.4;">vol.36 对谈<span style="color:#667eea;">嘻哈</span>王越：表达是一封"欢迎你来到我的世界"的邀请函</div>
+                    <div style="display:flex;gap:12px;font-size:12px;color:#999;">
+                        <span>▶ 41.5万</span>
+                        <span>💬 540</span>
+                        <span>44分钟</span>
+                    </div>
+                </div>
+
+                <div style="background:#f5f7fa;border-radius:12px;padding:16px;">
+                    <div style="font-size:12px;color:#999;margin-bottom:6px;">展开讲讲 · 2025.8.22</div>
+                    <div style="font-size:15px;font-weight:600;color:#000;margin-bottom:8px;line-height:1.4;">81.脱口秀英雌传：女性如何用笑声改写叙事</div>
+                    <div style="display:flex;gap:12px;font-size:12px;color:#999;">
+                        <span>▶ 24.7万</span>
+                        <span>💬 965</span>
+                        <span>107分钟</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PAGE 3: HOST PROFILE ==================== -->
+        <div class="page" id="profilePage">
+            <div class="profile-header">
+                <div class="profile-nav">
+                    <span class="profile-back-btn" onclick="goBackToSearch()">‹ 返回</span>
+                </div>
+                <div class="profile-content">
+                    <div class="profile-left">
+                        <div class="profile-name">嘻哈</div>
+                        <div class="profile-bio">🦀玩儿 | ✈️工作 | 🎤演出 | 更新ing.
+个人专场《密壮》巡演ing./祝你风生水起，祝我自由如风，降低预期，我从不活在任何人的期待里，平凡快乐就好 / ⚠️工作对接@The Noise 过载喜剧</div>
+                    </div>
+                    <div class="profile-avatar">
+                        <img src="xiha-avatar.jpg" alt="嘻哈" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23667eea%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2240%22%3E🎭%3C/text%3E%3C/svg%3E'">
+                        <div class="profile-badge">✨</div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button class="profile-btn primary">已关注</button>
+                    <button class="profile-btn secondary">发消息</button>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-number">8</div>
+                    <div class="profile-stat-label">关注</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-number">1.5万</div>
+                    <div class="profile-stat-label">粉丝</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-number">45</div>
+                    <div class="profile-stat-label">订阅</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-number">128时42分</div>
+                    <div class="profile-stat-label">收听时长</div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-section-title">
+                    <div class="section-icon">🎤</div>
+                    <span>她的播客</span>
+                </div>
+                <div class="episode-timeline">
+                    <!-- Episode 1 -->
+                    <div class="timeline-item" onclick="openEpisode('https://www.xiaoyuzhoufm.com/episode/68c820ff2c82c9dcca833f19')">
+                        <div class="timeline-date">
+                            <div class="timeline-month">Sep</div>
+                            <div class="timeline-day">16</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-podcast">
+                                <div class="timeline-podcast-cover">
+                                    <img src="https://image.xyzcdn.net/FpMac26U7CcdXhJmgZxIGxcDY-Y-.png" alt="天真不天真">
+                                </div>
+                                <div class="timeline-podcast-name">天真不天真</div>
+                            </div>
+                            <div class="timeline-title">vol.36 对谈嘻哈王越：表达是一封"欢迎你来到我的世界"的邀请函</div>
+                            <div class="timeline-meta">
+                                <span class="timeline-tag">嘉宾</span>
+                                <span>44分钟</span>
+                            </div>
+                            <div class="timeline-stats">
+                                <div class="timeline-stat">
+                                    <span>▶</span>
+                                    <span>41.5万</span>
+                                </div>
+                                <div class="timeline-stat">
+                                    <span>💬</span>
+                                    <span>540</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Episode 2 -->
+                    <div class="timeline-item" onclick="openEpisode('https://www.xiaoyuzhoufm.com/episode/68a72a4a42cc2798e7bf5643')">
+                        <div class="timeline-date">
+                            <div class="timeline-month">Aug</div>
+                            <div class="timeline-day">22</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-podcast">
+                                <div class="timeline-podcast-cover">
+                                    <img src="https://image.xyzcdn.net/FmKfIpttk36JzhU_EdromTtZQisJ.png" alt="展开讲讲">
+                                </div>
+                                <div class="timeline-podcast-name">展开讲讲</div>
+                            </div>
+                            <div class="timeline-title">81.脱口秀英雌传：女性如何用笑声改写叙事</div>
+                            <div class="timeline-meta">
+                                <span class="timeline-tag">嘉宾</span>
+                                <span>107分钟</span>
+                            </div>
+                            <div class="timeline-stats">
+                                <div class="timeline-stat">
+                                    <span>▶</span>
+                                    <span>24.7万</span>
+                                </div>
+                                <div class="timeline-stat">
+                                    <span>💬</span>
+                                    <span>965</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Episode 3 -->
+                    <div class="timeline-item" onclick="openEpisode('https://www.xiaoyuzhoufm.com/episode/6877574b94c433b272fbcf97')">
+                        <div class="timeline-date">
+                            <div class="timeline-month">Jul</div>
+                            <div class="timeline-day">16</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-podcast">
+                                <div class="timeline-podcast-cover">
+                                    <img src="https://image.xyzcdn.net/Ft-Q_cgCvpZbRkCmaL4OM2wh6VEd.png" alt="欢迎老张">
+                                </div>
+                                <div class="timeline-podcast-name">欢迎老张</div>
+                            </div>
+                            <div class="timeline-title">Vol.67 纯玩！全是真诚也全是恶意</div>
+                            <div class="timeline-meta">
+                                <span class="timeline-tag">嘉宾</span>
+                                <span>86分钟</span>
+                            </div>
+                            <div class="timeline-stats">
+                                <div class="timeline-stat">
+                                    <span>▶</span>
+                                    <span>12.2万</span>
+                                </div>
+                                <div class="timeline-stat">
+                                    <span>💬</span>
+                                    <span>236</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showSearchPage() {
+            showPage('searchPage');
+        }
+
+        function showHostProfile() {
+            showPage('profilePage');
+        }
+
+        function goBackToDiscover() {
+            showPage('discoverPage');
+        }
+
+        function goBackToSearch() {
+            showPage('searchPage');
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+        }
+
+        function openEpisode(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
